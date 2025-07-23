@@ -98,7 +98,7 @@ export default function DashboardClient({ projects }: { projects: any[] }) {
           <RefreshButton />
         </div>
       </div>
-      <ProjectList initialProjects={projects} statusFilter={statusFilter} setStatusFilter={setStatusFilter} />
+      <ProjectList initialProjects={projects} />
     </>
   )
 } 
