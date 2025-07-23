@@ -3,7 +3,7 @@ import { useState } from 'react'
 import ProjectList from '@/components/projects/ProjectList'
 import RefreshButton from '@/components/ui/RefreshButton'
 
-export default function DashboardClient({ projects }) {
+export default function DashboardClient({ projects }: { projects: any[] }) {
   const [statusFilter, setStatusFilter] = useState('')
   // Calculate counts for each status
   const totalCount = projects?.length || 0
