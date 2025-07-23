@@ -98,6 +98,7 @@ export default function DashboardClient({ projects }: { projects: any[] }) {
           <RefreshButton />
         </div>
       </div>
+      {/* Project list with internal filtering */}
       <ProjectList initialProjects={projects} />
     </>
   )
