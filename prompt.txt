@@ -1,0 +1,55 @@
+I’m building a simple web platform called Clipnote. It’s for freelance video editors and their clients to easily collaborate and exchange feedback.
+
+There are **two types of users**:
+1. Video Editor (registered user)
+2. Client (guest user with no login)
+
+Let’s structure the app like this:
+
+---
+
+🔐 **Video Editor Flow (Authenticated via Google or email):**
+
+- Editor signs up or logs in (Google Auth or email/password)
+- After login, they see a dashboard with a list of all their projects
+- They can click "New Project"
+  - Upload a video file (drag and drop)
+  - Give the project a title (e.g. “Wedding Draft #1”)
+  - Once uploaded, a shareable link is generated
+- This link is sent to the client
+
+---
+
+🧾 **Client Flow (No login):**
+
+- The client opens the link in a browser
+- They see the video player and timeline
+- They can click anywhere in the timeline to leave a comment (timestamp + text)
+- Comments appear in a list below the video
+- When done, they click "Finish Review"
+  - The system notifies the video editor that comments were added
+
+---
+
+💬 **Editor Side After Review:**
+
+- The editor can open the project
+- See the list of comments with timestamps
+- Export them as CSV or SRT
+- Respond to comments (optional, for later version)
+
+---
+
+🧱 **Tech Stack:**
+
+Use:
+- Next.js + TypeScript
+- Tailwind CSS for styling
+- Supabase for:
+  - User auth (Google + email/password)
+  - File storage (video uploads)
+  - Database (projects, comments)
+  - Real-time updates (optional)
+
+Let’s start by building the login flow and the editor dashboard (without real upload yet). Focus on clean UI and logical structure.
+ Ask me if anything is unclear.
