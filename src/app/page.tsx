@@ -61,9 +61,53 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-cyan-100 via-blue-50 to-teal-100">
+    <div className="relative min-h-screen flex bg-gradient-to-br from-cyan-100 via-blue-50 to-teal-100 overflow-hidden">
+      {/* Mobile-only full-screen illustration background */}
+      <div className="absolute inset-0 z-0 md:hidden">
+        <div className="w-full h-full">
+          <div className="absolute inset-0 bg-gradient-to-b from-orange-100 via-yellow-100 to-blue-200">
+            {/* Sun */}
+            <div className="absolute top-10 right-10 w-24 h-24 bg-gradient-to-br from-yellow-200 to-orange-200 rounded-full opacity-70"></div>
+            <div className="absolute top-16 right-16 w-16 h-16 bg-gradient-to-br from-yellow-100 to-orange-100 rounded-full opacity-90"></div>
+          </div>
+          {/* Mountains layers with softer colors */}
+          <div className="absolute bottom-0 left-0 right-0">
+            {/* Back mountains */}
+            <svg className="absolute bottom-32 w-full h-40" viewBox="0 0 400 200" preserveAspectRatio="none">
+              <path d="M0,200 L0,120 Q50,80 100,100 Q150,70 200,90 Q250,60 300,80 Q350,50 400,70 L400,200 Z" fill="rgba(59, 130, 246, 0.2)" />
+            </svg>
+            {/* Middle mountains */}
+            <svg className="absolute bottom-16 w-full h-32" viewBox="0 0 400 150" preserveAspectRatio="none">
+              <path d="M0,150 L0,90 Q80,50 160,70 Q240,40 320,60 Q360,35 400,50 L400,150 Z" fill="rgba(59, 130, 246, 0.4)" />
+            </svg>
+            {/* Front mountains */}
+            <svg className="absolute bottom-0 w-full h-24" viewBox="0 0 400 120" preserveAspectRatio="none">
+              <path d="M0,120 L0,80 Q100,30 200,50 Q300,20 400,40 L400,120 Z" fill="rgba(59, 130, 246, 0.6)" />
+            </svg>
+          </div>
+          {/* Trees with softer colors */}
+          <div className="absolute bottom-6 left-1/4">
+            <div className="relative">
+              <div className="w-1 h-8 bg-gray-700 absolute bottom-0 left-1/2 transform -translate-x-1/2"></div>
+              <div className="w-4 h-10 bg-gray-800 clip-path-tree absolute bottom-6 left-1/2 transform -translate-x-1/2"></div>
+            </div>
+          </div>
+          <div className="absolute bottom-6 left-1/2">
+            <div className="relative">
+              <div className="w-1 h-10 bg-gray-700 absolute bottom-0 left-1/2 transform -translate-x-1/2"></div>
+              <div className="w-5 h-12 bg-gray-800 clip-path-tree absolute bottom-8 left-1/2 transform -translate-x-1/2"></div>
+            </div>
+          </div>
+          <div className="absolute bottom-6 right-1/3">
+            <div className="relative">
+              <div className="w-1 h-6 bg-gray-700 absolute bottom-0 left-1/2 transform -translate-x-1/2"></div>
+              <div className="w-3 h-8 bg-gray-800 clip-path-tree absolute bottom-4 left-1/2 transform -translate-x-1/2"></div>
+            </div>
+          </div>
+        </div>
+      </div>
       {/* Left Side - Auth Form */}
-      <div className="flex-1 flex items-center justify-center p-8 flex-col">
+      <div className="relative z-10 w-full md:flex-1 flex items-center justify-center p-4 md:p-8 flex-col">
         {/* Clipnote headline and slogan above the login card */}
         <div className="mb-3 w-full flex flex-col items-center">
           <h1 className="text-5xl font-bold mb-1 tracking-tight animated-gradient-text" style={{ letterSpacing: '.04em' }}>Clipnote</h1>
@@ -196,8 +240,8 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Right Side - Artistic Illustration */}
-      <div className="flex-1 relative overflow-hidden">
+      {/* Right Side - Artistic Illustration (hidden on mobile) */}
+      <div className="hidden md:block flex-1 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-rose-200 via-orange-200 to-pink-300 rounded-l-[3rem]">
           {/* Sky gradient with sun */}
           <div className="absolute inset-0 bg-gradient-to-b from-orange-100 via-yellow-100 to-blue-200 rounded-l-[3rem]">
