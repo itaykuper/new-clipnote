@@ -21,76 +21,9 @@ export default function NewProjectForm({ userId }: NewProjectFormProps) {
   const [title, setTitle] = useState('')
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [uploadedUrl, setUploadedUrl] = useState<string | null>(null)
-  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null)
-  const [scriptLoaded, setScriptLoaded] = useState(false)
+  const [videoFile, setVideoFile] = useState<File | null>(null)
   const router = useRouter()
   const supabase = createClientComponentClient()
-
-  const handleUploadClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    setError(null)
-    
-    if (!window.cloudinary) {
-      console.error('Cloudinary not loaded')
-      setError('Upload widget not ready. Please refresh the page.')
-      return
-    }
-
-    console.log('Creating and opening upload widget...')
-    console.log('Cloud name:', process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME)
-    
-    const widget = window.cloudinary.createUploadWidget(
-      {
-        cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-        uploadPreset: 'clipnote',
-        sources: ['local'],
-        multiple: false,
-        maxFileSize: MAX_FILE_SIZE,
-        resourceType: 'video',
-        clientAllowedFormats: ['mp4', 'mov', 'avi', 'webm', 'mkv'],
-        folder: `users/${userId}`,
-      },
-      (error: any, result: any) => {
-        console.log('Widget callback:', { error, result })
-        
-        if (error) {
-          console.error('Upload error:', error)
-          setError('Upload failed: ' + (error.message || error.status || 'Unknown error'))
-          setUploading(false)
-          return
-        }
-
-        if (result.event === 'queues-start') {
-          console.log('Upload starting...')
-          setUploading(true)
-          setError(null)
-        }
-
-        if (result.event === 'upload-added') {
-          console.log('File added to queue:', result.info)
-        }
-
-        if (result.event === 'success') {
-          console.log('Upload success:', result.info)
-          setUploadedUrl(result.info.secure_url)
-          
-          // Generate thumbnail URL
-          const thumbnailUrl = result.info.secure_url.replace('/upload/', '/upload/w_640,h_360,c_pad,so_auto/')
-          setThumbnailUrl(thumbnailUrl)
-          
-          setUploading(false)
-        }
-      }
-    )
-
-    widget.open()
-  }
-
-  const handleScriptLoad = () => {
-    console.log('Cloudinary script loaded')
-    setScriptLoaded(true)
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -99,8 +32,13 @@ export default function NewProjectForm({ userId }: NewProjectFormProps) {
       return
     }
 
-    if (!uploadedUrl) {
-      setError('Please upload a video')
+    if (!videoFile) {
+      setError('Please select a video file')
+      return
+    }
+
+    if (videoFile.size > MAX_FILE_SIZE) {
+      setError('File is too large. Max size is 100MB.')
       return
     }
 
@@ -108,12 +46,36 @@ export default function NewProjectForm({ userId }: NewProjectFormProps) {
     setError(null)
 
     try {
+      // Upload video to Supabase Storage
+      const fileExt = videoFile.name.split('.').pop()
+      const filePath = `users/${userId}/${Date.now()}.${fileExt}`
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('videos')
+        .upload(filePath, videoFile, {
+          cacheControl: '3600',
+          upsert: false,
+        })
+
+      if (uploadError) {
+        throw new Error(`Upload failed: ${uploadError.message}`)
+      }
+
+      // Get public URL
+      const { data: publicUrlData } = supabase.storage
+        .from('videos')
+        .getPublicUrl(filePath)
+      const publicUrl = publicUrlData?.publicUrl
+      if (!publicUrl) {
+        throw new Error('Failed to get public URL for uploaded video')
+      }
+
+      // Save project in DB
       const { error: dbError } = await supabase
         .from('projects')
         .insert({
           title,
-          video_url: uploadedUrl,
-          thumbnail_url: thumbnailUrl,
+          video_url: publicUrl,
+          thumbnail_url: null, // You can add thumbnail logic later
           user_id: userId,
         })
 
@@ -121,7 +83,7 @@ export default function NewProjectForm({ userId }: NewProjectFormProps) {
         throw new Error(`Database operation failed: ${dbError.message}`)
       }
 
-      // Force a hard navigation to the dashboard
+      // Redirect to dashboard
       window.location.href = '/dashboard'
     } catch (err) {
       console.error('Error in handleSubmit:', err)
@@ -133,11 +95,7 @@ export default function NewProjectForm({ userId }: NewProjectFormProps) {
 
   return (
     <>
-      <Script 
-        src="https://upload-widget.cloudinary.com/global/all.js" 
-        onLoad={handleScriptLoad}
-      />
-      
+      {/* Removed Cloudinary <Script> */}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label htmlFor="title" className="block text-sm font-medium leading-6 text-gray-900">
@@ -160,17 +118,16 @@ export default function NewProjectForm({ userId }: NewProjectFormProps) {
             Video File (Max {MAX_FILE_SIZE / 1024 / 1024}MB)
           </label>
           <div className="mt-2">
-            <button
-              type="button"
-              onClick={handleUploadClick}
+            <input
+              type="file"
+              accept="video/mp4,video/mov,video/avi,video/webm,video/mkv"
+              onChange={(e) => setVideoFile(e.target.files ? e.target.files[0] : null)}
               disabled={uploading}
-              className="block w-full rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {uploading ? 'Uploading...' : 'Select Video'}
-            </button>
-            {uploadedUrl && (
+              className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none"
+            />
+            {videoFile && (
               <p className="mt-2 text-sm text-green-600">
-                Video uploaded successfully!
+                Selected: {videoFile.name}
               </p>
             )}
           </div>
@@ -184,7 +141,7 @@ export default function NewProjectForm({ userId }: NewProjectFormProps) {
 
         <button
           type="submit"
-          disabled={uploading || !uploadedUrl}
+          disabled={uploading || !videoFile}
           className="flex w-full justify-center rounded-md bg-primary-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600 disabled:opacity-50"
         >
           {uploading ? 'Creating Project...' : 'Create Project'}
