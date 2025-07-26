@@ -37,7 +37,7 @@ export default function NewProjectForm({ userId }: NewProjectFormProps) {
     const widget = window.cloudinary.createUploadWidget(
       {
         cloudName: 'dtompyfxk', // your cloud name
-        uploadPreset: 'clipnote', // your unsigned preset
+        uploadPreset: 'testunsigned', // your new unsigned preset
         sources: ['local'],
         multiple: false,
         resourceType: 'video',
